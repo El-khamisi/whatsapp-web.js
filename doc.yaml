@@ -1,0 +1,113 @@
+asyncapi: '2.4.0'
+info:
+  title: Go-whatsapp web API
+  version: '1.0.0'
+  description: |
+    The Go-whatsapp web API give you the ability to interact with your whatsapp
+    application from the website.
+
+defaultContentType: application/json
+
+servers:
+  test:
+    url: localhost:5050
+    protocol: http || ws
+    security:
+      - bearerAuth: []
+
+channels:
+  ioerr:
+    description: Publisher of Socket.io errors
+    publish:
+      message:
+        $ref: '#/components/messages/ioerr'
+
+  wdata:
+    description: Publisher of wwhatsapp web client data responses 
+    publish:
+      message:
+        $ref: '#/components/messages/wdata'
+
+  wlogs:
+    description: Publisher of wwhatsapp web client logs
+    publish:
+      message:
+        $ref: '#/components/messages/wlogs'
+
+  w:init:
+    description: Subscribe to initialize whatsapp web client
+    subscribe:
+      description: Subscribe to initialize whatsapp web client
+
+  chats:getAll:
+    description: Subscribe to get all chats
+    subscribe:
+      description: Subscribe to get all chats
+
+
+  contacts:getAll:
+    description: Subscribe to get all contacts
+    subscribe:
+      description: Subscribe to get all contacts
+      
+  msgs:send:
+    description: Subscribe to send message
+    subscribe:
+        message: 
+          $ref: '#/components/messages/msgs:send'
+
+components:
+  messages:
+    ioerr:
+      name: ioerr
+      title: Socket.io Errors
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          err:
+            type: string
+            description: Error message
+
+    wdata:
+      name: wdata
+      title: wwhatsapp web client data responses
+      contentType: application/json
+      payload:
+        type: object
+        properties:
+          data:
+            type: object
+            description: Object with data from wwhatsapp web client response
+
+    wlogs:
+      name: wlogs
+      title: wwhatsapp web client logs
+      contentType: text/plain
+      payload:
+        type: string
+        description: Logs from wwhatsapp web client
+    
+    msgs:send:
+      name: msgs:send
+      title: Send message to One User or multiple users
+      contentType: application/json
+      payload:
+        type: object
+        properties: 
+          users:
+            type:
+              - string
+              - array
+            description: Array of users to send message to
+          msgBody:
+            type: string
+            description: Message body to send
+          
+
+
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: Bearer <token> 

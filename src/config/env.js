@@ -7,4 +7,6 @@ module.exports = {
   TOKENKEY: process.env.TOKENWORD,
 
   NODE_ENV: process.env.NODE_ENV,
+
+  WSESSION_FILE_PATH: process.env.WSESSION_FILE_PATH,
 };
