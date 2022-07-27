@@ -1,0 +1,32 @@
+{
+  "name": "whatsapp-webjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prettier": "prettier --config .prettierrc 'src/**/*.js'  --write",
+    "dev": "nodemon index.js 5050",
+    "prod": " NODE_ENV=prod node index.js 8080",
+    "start": "node index.js",
+    "jasmine": "npx jasmine"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "connect-mongo": "^4.6.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.4.6",
+    "morgan": "^1.10.0",
+    "prettier": "^2.7.1",
+    "qrcode-terminal": "^0.12.0",
+    "socket.io": "^4.4.1",
+    "validator": "^13.7.0",
+    "whatsapp-web.js": "^1.17.1"
+  }
+}
