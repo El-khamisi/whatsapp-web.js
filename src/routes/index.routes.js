@@ -14,7 +14,7 @@ const { TOKENKEY, DBURI, DBURI_remote, NODE_ENV } = require('../config/env');
 //import routes
 const login = require('./login.routes');
 const { failedRes } = require('../utils/response');
-const initSocketio = require('./initSocketio');
+const initSocketio = require('./initSocketio.channels');
 
 module.exports = async (app, httpServer) => {
   app.use(express.json());
