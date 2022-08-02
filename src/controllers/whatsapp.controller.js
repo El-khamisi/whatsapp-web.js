@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 
 const { WSESSION_FILE_PATH } = require('../config/env');
 const { emitLogs } = require('../utils/writeLogs');
@@ -15,6 +15,7 @@ class whatsappClientEvents {
       const { account_id } = payload;
       if (!account_id) throw new Error('account_id is required');
 
+      this.socket.account_id = account_id;
       //First we need to check if the user has a session file
       if (!fs.existsSync(WSESSION_FILE_PATH)) {
         fs.mkdirSync(WSESSION_FILE_PATH);
@@ -56,10 +57,21 @@ class whatsappClientEvents {
       this.client.on('incoming_call', (call) => wHandlerInstance.incoming_call(call));
 
       //Messages handlers
+      this.client.on('message', (msg) => wHandlerInstance.message(msg));
       this.client.on('message_ack', (msg, ack) => wHandlerInstance.message_ack(msg, ack));
 
       await this.client.initialize();
       this.socket.emit('wlogs', `Client has been initialized`);
+    } catch (err) {
+      emitLogs(this.socket, `ERROR::${err.message}`);
+    }
+  };
+
+  logout = () => {
+    try {
+      this.client.destroy();
+      this.client.logout();
+      this.socket.emit('wlogs', `Client has been disconnected`);
     } catch (err) {
       emitLogs(this.socket, `ERROR::${err.message}`);
     }
@@ -70,7 +82,7 @@ class whatsappClientEvents {
       this.client
         .getChats()
         .then((data) => this.socket.emit('wdata', { data }))
-        .catch((err) => this.socket.emit('wlogs', err.message));
+        .catch((err) => this.socket.emit('wlogs', `ERROR::${err.message}`));
     } catch (err) {
       emitLogs(this.socket, `ERROR::${err.message}`);
     }
@@ -85,10 +97,9 @@ class whatsappClientEvents {
           contact.id = contact.id._serialized;
           this.socket.emit('wdata', { data });
         })
-        .catch((err) => this.socket.emit('wlogs', err.message));
+        .catch((err) => this.socket.emit('wlogs', `ERROR::${err.message}`));
     } catch (err) {
-      console.log(err.message);
-      this.socket.emit('iologs', { err: err.message });
+      emitLogs(this.socket, `ERROR::${err.message}`);
     }
   };
 
@@ -100,16 +111,15 @@ class whatsappClientEvents {
           contacts.forEach((e, i) => (contacts[i].id = e.id._serialized));
           this.socket.emit('wdata', { data });
         })
-        .catch((err) => this.socket.emit('wlogs', err.message));
+        .catch((err) => this.socket.emit('wlogs', `ERROR::${err.message}`));
     } catch (err) {
-      console.log(err.message);
-      this.socket.emit('iologs', { err: err.message });
+      emitLogs(this.socket, `ERROR::${err.message}`);
     }
   };
 
   sendMsgTo = async (payload) => {
     try {
-      const { users, msgBody } = payload;
+      const { users, text, base64, mimeType } = payload;
       if (!users) throw new Error(`Users in undefined`);
 
       if (!Array.isArray(users)) {
@@ -121,15 +131,24 @@ class whatsappClientEvents {
       const response = [];
       for (const e of users) {
         const msg = await this.client
-          .sendMessage(`${e}@c.us`, msgBody)
+          .sendMessage(`${e}@c.us`, text)
           .then((msg) => msg)
-          .catch((err) => socket.emit('wlogs', err.message));
+          .catch((err) => this.socket.emit('wlogs', `ERROR::${err.message}`));
+
+        if (base64 && mimeType) {
+          const media = new MessageMedia(mimeType, base64);
+          const msgMedia = await this.client
+            .sendMessage(`${e}@c.us`, media)
+            .then((msg) => msg)
+            .catch((err) => this.socket.emit('wlogs', `ERROR::${err.message}`));
+          response.push(msgMedia);
+        }
+
         response.push(msg);
       }
       this.socket.emit('wdata', { data: response });
     } catch (err) {
-      console.log(err.message);
-      this.socket.emit('iologs', { err: err.message });
+      emitLogs(this.socket, `ERROR::${err.message}`);
     }
   };
 }

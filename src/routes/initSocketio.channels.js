@@ -1,4 +1,5 @@
 const whatsappClientEvents = require('../controllers/whatsapp.controller');
+const { uploadMedia } = require('../utils/socketMedia');
 const { emitLogs } = require('../utils/writeLogs');
 
 module.exports = function (socket) {
@@ -8,7 +9,7 @@ module.exports = function (socket) {
 
   //wInitializetion
   socket.on('w:init', wEventsInstance.init);
-  // socket.on('disconnect', disconnect);
+  socket.on('w:logout', wEventsInstance.logout);
 
   //wChats
   socket.on('chats:getAll', wEventsInstance.getChats);

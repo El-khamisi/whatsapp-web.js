@@ -1,11 +1,17 @@
 const express = require('express');
 const {createServer} = require('http');
+const fs = require('fs');
+const path = require('path');
+
 
 //Config
 const { PORT, NODE_ENV } = require('./src/config/env.js');
 
 const port = PORT || 8080;
 
+if (fs.existsSync(path.join(__dirname, '/iologs.txt'))) {
+  fs.rmSync(path.join(__dirname, '/iologs.txt'));
+}
 
 //Create Application
 const app = express();

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { TOKENKEY } = require('../config/env');
 const { failedRes } = require('../utils/response');
+const { emitLogs } = require('../utils/writeLogs');
 
 exports.authN = (req, res, next) => {
   try {
@@ -27,6 +28,7 @@ exports.socketAuthN = (socket, next) => {
     socket.user = verify;
     next();
   } catch (err) {
+    emitLogs(socket, `ERROR: ${err.message}`);
     return next(new Error(err.message));
   }
 };

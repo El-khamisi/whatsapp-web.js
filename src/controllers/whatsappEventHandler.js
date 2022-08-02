@@ -1,4 +1,6 @@
 const qrcode = require('qrcode-terminal');
+const { Account } = require('../models/user.model');
+const { emitLogs } = require('../utils/writeLogs');
 
 class whatsappEventHandler {
   constructor(socket, client) {
@@ -7,9 +9,9 @@ class whatsappEventHandler {
   }
 
   qrHandler = (qr) => {
-    console.log('QR RECEIVED', qr);
     qrcode.generate(qr, { small: true });
-    this.socket.emit('wlogs', { qrCode: qr });
+    this.socket.emit('wdata', { data: qr });
+    emitLogs(this.socket, `QR RECEIVED: ${qr}`);
   };
 
   authenticated = () => {
@@ -36,6 +38,19 @@ class whatsappEventHandler {
 
   incoming_call = (call) => {
     this.socket.emit('wlogs', ` has incoming call`);
+  };
+
+  message = (msg) => {
+    const account = await Account.findById(this.socket.account_id).exec();
+    const bot = await Bot.findById(account.bot).exec();
+
+    for(reply of bot.autoReplies) {
+      if(msg.body == reply.msg){
+        msg.reply(reply.reply);
+        break;
+      }
+    }
+    this.socket.emit('wlogs', `Replied to ${msg.body} has been sent`);
   };
 
   message_ack = async (msg, ack) => {

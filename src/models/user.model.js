@@ -25,19 +25,6 @@ const userSchema = new mongoose.Schema(
   { strict: true, timestamps: true }
 );
 
-const accountSchema = new mongoose.Schema(
-  {
-    id: { type: String, required: true, unique: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    name: { type: String, trim: true, required: true },
-    is_verified: { type: Boolean, default: false },
-    type: { type: String, enum: ['chat', 'bot', 'chat&bot'], required: true },
-    mobile: { type: String, trim: true, required: true },
-    bot: { type: String, trim: true, required: true },
-  },
-  { timestamps: true }
-);
-
 userSchema.methods.generateToken = function (req, res) {
   const token = jwt.sign(
     {
@@ -73,6 +60,31 @@ userSchema.methods.toJSON = function () {
 //   next();
 // });
 
+
+const accountSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true, unique: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    name: { type: String, trim: true, required: true },
+    is_verified: { type: Boolean, default: false },
+    type: { type: String, enum: ['chat', 'bot', 'chat&bot'], required: true },
+    mobile: { type: String, trim: true, required: true },
+    bot: {type: mongoose.Schema.Types.ObjectId, ref: 'Bot'},
+  },
+  { timestamps: true }
+);
+
+const botSchema = new mongoose.Schema(
+  {
+    autoReplies: 
+    [
+      {
+        msg: String,
+        reply: String
+      }
+    ]
+  });
+
 const verificationSchema = new mongoose.Schema({
   verification_hash: { type: String },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -82,4 +94,5 @@ module.exports = {
   Account: mongoose.model('Account', accountSchema),
   User: mongoose.model('User', userSchema),
   Verification: mongoose.model('Verification', verificationSchema),
+  Bot: mongoose.model('Bot', botSchema)
 };
