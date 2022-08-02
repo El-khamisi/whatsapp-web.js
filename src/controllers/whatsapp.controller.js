@@ -1,13 +1,43 @@
+const fs = require('fs');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+
+const { WSESSION_FILE_PATH } = require('../config/env');
+const { emitLogs } = require('../utils/writeLogs');
 const whatsappEventHandler = require('./whatsappEventHandler');
 
 class whatsappClientEvents {
-  constructor(socket, client) {
+  constructor(socket) {
     this.socket = socket;
-    this.client = client;
   }
 
-  init = () => {
+  init = async (payload) => {
     try {
+      const { account_id } = payload;
+      if (!account_id) throw new Error('account_id is required');
+
+      //First we need to check if the user has a session file
+      if (!fs.existsSync(WSESSION_FILE_PATH)) {
+        fs.mkdirSync(WSESSION_FILE_PATH);
+      }
+      this.client = new Client({
+        authStrategy: new LocalAuth({
+          clientId: account_id,
+          dataPath: WSESSION_FILE_PATH,
+        }),
+        puppeteer: {
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process', // <- this one doesn't works in Windows
+            '--disable-gpu',
+          ],
+        },
+      });
       const wHandlerInstance = new whatsappEventHandler(this.socket, this.client);
 
       /*Emitted when qr code*/
@@ -28,11 +58,10 @@ class whatsappClientEvents {
       //Messages handlers
       this.client.on('message_ack', (msg, ack) => wHandlerInstance.message_ack(msg, ack));
 
-      this.client.initialize();
-      this.socket.emit('wlogs' ,`Client has been initialized`);
+      await this.client.initialize();
+      this.socket.emit('wlogs', `Client has been initialized`);
     } catch (err) {
-      console.log(err.message);
-      this.socket.emit('ioerr', {err: err.message});
+      emitLogs(this.socket, `ERROR::${err.message}`);
     }
   };
 
@@ -43,24 +72,23 @@ class whatsappClientEvents {
         .then((data) => this.socket.emit('wdata', { data }))
         .catch((err) => this.socket.emit('wlogs', err.message));
     } catch (err) {
-      console.log(err.message);
-      this.socket.emit('ioerr', {err: err.message});
+      emitLogs(this.socket, `ERROR::${err.message}`);
     }
   };
 
   getContactById = (payload) => {
     try {
-      const {contactId} = payload;
+      const { contactId } = payload;
       this.client
         .getContactById(contactId)
         .then((data) => {
           contact.id = contact.id._serialized;
           this.socket.emit('wdata', { data });
         })
-        .catch((err) => this.socket.emit('wlogs', err.message ));
+        .catch((err) => this.socket.emit('wlogs', err.message));
     } catch (err) {
       console.log(err.message);
-      this.socket.emit('ioerr', {err: err.message});
+      this.socket.emit('iologs', { err: err.message });
     }
   };
 
@@ -72,10 +100,10 @@ class whatsappClientEvents {
           contacts.forEach((e, i) => (contacts[i].id = e.id._serialized));
           this.socket.emit('wdata', { data });
         })
-        .catch((err) => this.socket.emit('wlogs', err.message ));
+        .catch((err) => this.socket.emit('wlogs', err.message));
     } catch (err) {
       console.log(err.message);
-      this.socket.emit('ioerr', {err: err.message});
+      this.socket.emit('iologs', { err: err.message });
     }
   };
 
@@ -95,13 +123,13 @@ class whatsappClientEvents {
         const msg = await this.client
           .sendMessage(`${e}@c.us`, msgBody)
           .then((msg) => msg)
-          .catch((err) => socket.emit('wlogs', err.message ));
+          .catch((err) => socket.emit('wlogs', err.message));
         response.push(msg);
       }
       this.socket.emit('wdata', { data: response });
     } catch (err) {
       console.log(err.message);
-      this.socket.emit('ioerr', {err: err.message});
+      this.socket.emit('iologs', { err: err.message });
     }
   };
 }

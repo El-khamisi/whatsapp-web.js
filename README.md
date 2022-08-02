@@ -58,16 +58,12 @@ WSESSION_FILE_PATH
 .
 |_node_modules/
 |_src
-|    |_config
-|    |_middelwares
-|    |_services          #website is divided into small services
-|    |    |_model.js
-|    |    |_controllers.js            
-|    |    |_routes.js
-|    |    
-|    |_utils
-|    |
-|    |_index.routes.js
+  |_config        #configurations files
+  |_controllers   #controllers files
+  |_middlewares   #custom middleware
+  |_models        #database repositories files
+  |_routes        #API routes files
+  |_utils         #general server utilities
 |
 |_.env
 |_.gitignore

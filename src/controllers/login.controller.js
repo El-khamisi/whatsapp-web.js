@@ -5,7 +5,13 @@ const { successfulRes, failedRes } = require('../utils/response');
 const { setS_id } = require('../utils/cookie');
 const { default: mongoose } = require('mongoose');
 const MongoStore = require('connect-mongo');
-const { NODE_ENV, TOKENKEY } = require('../config/env');
+const { NODE_ENV, TOKENKEY, to_email, baseUrl } = require('../config/env');
+const { smtpMail } = require('../utils/smtp');
+
+const verificationMsg = (name, baseUrl, verfHash) => `Hello ${name},
+ You requested to use this email address to access your Shuhyb Academy account.
+Click the link below to verify this email address
+${baseUrl}/email-confirmation/${verfHash}`;
 
 exports.regUser = async (req, res) => {
   try {
@@ -30,22 +36,20 @@ exports.regUser = async (req, res) => {
       isVerified: saved.isVerified,
     };
 
-    setS_id(req, res);
+    // setS_id(req, res);
 
     // Send Email verification
-    // const hash = crypto.createHmac('sha256', TOKENKEY).update(saved._id.toString()).digest('hex');
-    // const verification = new Verification({ verification_hash: hash, user_id: saved._id });
-    // await verification.save();
-    // const info = await smtpMail(
-    //   saved.email,
-    //   'textgenuss',
-    //   to_email,
-    //   'textgenuss email verification',
-    //   `Hello ${saved.first_name} ${saved.last_name},
-    // You requested to use this email address to access your Shuhyb Academy account.
-    // Click the link below to verify this email address
-    // ${server_domain}/email-confirmation/${verification.verification_hash}`
-    // );
+    const hash = crypto.createHmac('sha256', TOKENKEY).update(saved._id.toString()).digest('hex');
+    const verfCode = new Verification({ verification_hash: hash, user_id: saved._id });
+    await verfCode.save();
+
+    const info = await smtpMail(
+      saved.email,
+      'GoWhats',
+      to_email,
+      'GoWhats email verification',
+      verificationMsg(`${saved.first_name} ${saved.last_name}`, baseUrl, hash)
+    );
     return successfulRes(res, 201, { user, token, email_verifiction: info?.response });
   } catch (e) {
     return failedRes(res, 500, e);
@@ -60,9 +64,7 @@ exports.logUser = async (req, res) => {
   }
 
   try {
-    let logged = await User.findOne({
-      email,
-    }).exec();
+    let logged = await User.findOne({ email }).exec();
 
     if (!logged) {
       return failedRes(res, 400, null, 'Email is invalid');
@@ -86,7 +88,7 @@ exports.logUser = async (req, res) => {
         role: logged.role,
       };
 
-      setS_id(req, res);
+      // setS_id(req, res);
       return successfulRes(res, 200, { user, token });
     }
   } catch (e) {
@@ -160,17 +162,14 @@ exports.reverifyEmail = async (req, res) => {
     const user = req.session;
 
     const hash = crypto.createHmac('sha256', TOKENKEY).update(user._id.toString()).digest('hex');
-    const verification = new Verification({ verification_hash: hash, user_id: user._id });
-    await verification.save();
+    const verfCode = new Verification({ verification_hash: hash, user_id: user._id });
+    await verfCode.save();
     const info = await smtpMail(
-      user.email,
-      'textgenuss',
+      saved.email,
+      'GoWhats',
       to_email,
-      'textgenuss email verification',
-      `Hello ${user.first_name} ${user.last_name},
- You requested to use this email address to access your Shuhyb Academy account.
- Click the link below to verify this email address
- ${server_domain}/email-confirmation/${verification.verification_hash}`
+      'GoWhats email verification',
+      verificationMsg(`${user.first_name} ${user.last_name}`, baseUrl, hash)
     );
 
     return successfulRes(res, 201, { email_verifiction: info.response });

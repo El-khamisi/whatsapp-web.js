@@ -7,7 +7,7 @@
     "prettier": "prettier --config .prettierrc 'src/**/*.js'  --write",
     "dev": "nodemon index.js 5050",
     "prod": " NODE_ENV=prod node index.js 8080",
-    "start": "node index.js",
+    "start": "NODE_ENV=prod node index.js 8080",
     "jasmine": "npx jasmine"
   },
   "keywords": [],
@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "cloudinary": "^1.30.1",
     "connect-mongo": "^4.6.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.0.1",
@@ -23,6 +24,7 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.4.6",
     "morgan": "^1.10.0",
+    "nodemailer": "^6.7.7",
     "prettier": "^2.7.1",
     "qrcode-terminal": "^0.12.0",
     "socket.io": "^4.4.1",

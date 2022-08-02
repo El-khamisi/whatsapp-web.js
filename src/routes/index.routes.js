@@ -12,8 +12,7 @@ const { socketAuthN } = require('../middlewares/authN');
 const { TOKENKEY, DBURI, DBURI_remote, NODE_ENV } = require('../config/env');
 
 //import routes
-const login = require('./login.routes');
-const { failedRes } = require('../utils/response');
+const user = require('./user.routes');
 const initSocketio = require('./initSocketio.channels');
 
 module.exports = async (app, httpServer) => {
@@ -87,5 +86,5 @@ module.exports = async (app, httpServer) => {
   io.on('connection', initSocketio);
 
   //Express routers
-  app.use(login);
+  app.use(user);
 };
