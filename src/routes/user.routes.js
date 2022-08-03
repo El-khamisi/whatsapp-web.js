@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { authN } = require('../middlewares/authN');
 const { logUser, regUser, logout, resetPassword, reverifyEmail, emailVerification } = require('../controllers/login.controller');
-const { profileView, profileUpdate, profileDelete, addAccount } = require('../controllers/profile.controller');
+const { profileView, profileUpdate, profileDelete, addAccount, getAccounts, botCommand } = require('../controllers/profile.controller');
 
 //Authentication routes
 router.post('/login', logUser);
@@ -17,5 +17,7 @@ router.put('/myprofile', authN, profileUpdate);
 router.delete('/myprofile', authN, profileDelete);
 
 //Account routes
-router.post('/myprofile/accounts', authN, addAccount);
+router.get('/accounts', authN, getAccounts);
+router.post('/accounts', authN, addAccount);
+router.put('/accounts/bots/:account_id', authN, botCommand);
 module.exports = router;

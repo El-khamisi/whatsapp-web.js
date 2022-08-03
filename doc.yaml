@@ -16,11 +16,11 @@ servers:
       - bearerAuth: []
 
 channels:
-  ioerr:
+  iologs:
     description: Publisher of Socket.io errors
     publish:
       message:
-        $ref: '#/components/messages/ioerr'
+        $ref: '#/components/messages/iologs'
 
   wdata:
     description: Publisher of wwhatsapp web client data responses 
@@ -58,16 +58,13 @@ channels:
 
 components:
   messages:
-    ioerr:
-      name: ioerr
-      title: Socket.io Errors
-      contentType: application/json
+    iologs:
+      name: iologs
+      title: Socket.io Logs
+      contentType: text/plain
       payload:
-        type: object
-        properties:
-          err:
-            type: string
-            description: Error message
+        type: string
+        description: Socket.io logs and errors
 
     wdata:
       name: wdata
@@ -100,9 +97,17 @@ components:
               - string
               - array
             description: Array of users to send message to
-          msgBody:
+          text:
             type: string
             description: Message body to send
+            base64:
+              type: string
+              description: Media file to send in base64
+              mimeType:
+                type: string
+                description: mimiType of media to send         
+
+
           
 
 

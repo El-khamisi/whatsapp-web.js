@@ -1,5 +1,5 @@
 const qrcode = require('qrcode-terminal');
-const { Account } = require('../models/user.model');
+const { Account, Bot } = require('../models/user.model');
 const { emitLogs } = require('../utils/writeLogs');
 
 class whatsappEventHandler {
@@ -40,14 +40,16 @@ class whatsappEventHandler {
     this.socket.emit('wlogs', ` has incoming call`);
   };
 
-  message = (msg) => {
-    const account = await Account.findById(this.socket.account_id).exec();
-    const bot = await Bot.findById(account.bot).exec();
+  message = async (msg) => {
+    const bot = await Bot.findOne({account: this.socket.account_id}).exec();
 
-    for(reply of bot.autoReplies) {
-      if(msg.body == reply.msg){
-        msg.reply(reply.reply);
-        break;
+    //auto replies enabled
+    if(bot.enabled){
+      for(const reply of bot.autoReplies) {
+        if(msg.body == reply[0]){
+          msg.reply(reply[1]);
+          break;
+        }
       }
     }
     this.socket.emit('wlogs', `Replied to ${msg.body} has been sent`);

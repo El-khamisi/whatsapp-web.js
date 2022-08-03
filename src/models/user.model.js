@@ -76,13 +76,9 @@ const accountSchema = new mongoose.Schema(
 
 const botSchema = new mongoose.Schema(
   {
-    autoReplies: 
-    [
-      {
-        msg: String,
-        reply: String
-      }
-    ]
+    account: {type: mongoose.Schema.Types.ObjectId, require: true, unique: true},
+    enabled: {type: Boolean, default: false},
+    autoReplies: {type: Map, of: String, default: {}}
   });
 
 const verificationSchema = new mongoose.Schema({

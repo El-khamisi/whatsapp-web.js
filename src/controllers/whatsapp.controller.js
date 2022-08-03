@@ -69,8 +69,8 @@ class whatsappClientEvents {
 
   logout = () => {
     try {
+      // this.client.logout();
       this.client.destroy();
-      this.client.logout();
       this.socket.emit('wlogs', `Client has been disconnected`);
     } catch (err) {
       emitLogs(this.socket, `ERROR::${err.message}`);
@@ -119,8 +119,8 @@ class whatsappClientEvents {
 
   sendMsgTo = async (payload) => {
     try {
-      const { users, text, base64, mimeType } = payload;
-      if (!users) throw new Error(`Users in undefined`);
+      let { users, text, base64, mimeType } = payload;
+      if (!users) throw new Error(`users in undefined`);
 
       if (!Array.isArray(users)) {
         const arr = [];
@@ -136,6 +136,7 @@ class whatsappClientEvents {
           .catch((err) => this.socket.emit('wlogs', `ERROR::${err.message}`));
 
         if (base64 && mimeType) {
+          console.log('media')
           const media = new MessageMedia(mimeType, base64);
           const msgMedia = await this.client
             .sendMessage(`${e}@c.us`, media)
@@ -144,7 +145,7 @@ class whatsappClientEvents {
           response.push(msgMedia);
         }
 
-        response.push(msg);
+        // response.push(msg);
       }
       this.socket.emit('wdata', { data: response });
     } catch (err) {

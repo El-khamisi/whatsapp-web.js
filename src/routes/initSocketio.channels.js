@@ -1,5 +1,4 @@
 const whatsappClientEvents = require('../controllers/whatsapp.controller');
-const { uploadMedia } = require('../utils/socketMedia');
 const { emitLogs } = require('../utils/writeLogs');
 
 module.exports = function (socket) {
