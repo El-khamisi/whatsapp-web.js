@@ -1,14 +1,16 @@
-# eT3Task-Backend
+# whatsapp-web - Backend
 
 ## Description
-A Backend Server ( based on `node.js` and `express` framework) using `mongoDB` as a database provider and `mongoose` as ODM.
-The webstie  has the ability to register new users using `JWT token` with different roles.
+A real-time Server ( based on `node.js`, `express` framework, and `socket.io`) using `mongoDB` to store users data.
+The application provides the ability to build users' profiles and interact in real-time with `socket.io` to send whatsapp messages, notify when receiving messages, and customize auto-replies.
+
 
 
 ## Features
-* Authenticate and authorize users by `JWT token` and initialize `express-session` for each user.
+* Authenticate and authorize users by `JWT Bearer token` and initialize `express-session` for each user.
+* Use `socket.io` to interact with whatsapp.
+* Have `async API` documentation for `socket.io` events.
 * Store data in `mongodb` using the `mongoose` ODM.
-* Authenticate the token by `Bearer token`
 * Upload the media by `Multer` middleware and store them on `Cloudinary`.
 
 ## Installing
@@ -23,33 +25,41 @@ $ npm install
 
 >npm run scripts
 ```
-{
-    "scripts": {
-      "prettier": "prettier --config .prettierrc './**/*.js'  --write",
-      "dev": "nodemon index.js 5050",
-      "prod": " NODE_ENV=prod node index.js 8080",
-      "start": "node index.js"
-  },
-}
+"scripts": {
+  "prettier": "prettier --config .prettierrc 'src/**/*.js'  --write",
+  "dev": "nodemon index.js 5050",
+  "prod": " NODE_ENV=prod node index.js 8080",
+  "start": "NODE_ENV=prod node index.js 8080",
+},
 ```
 
-## API Documention
-[Postman API Documention](https://documenter.getpostman.com/view/17898602/UzXNVHWv)
 
 ## Environment Variables 
 > src/config/env.js
 ```
-PORT
-DBURI_remote
-DBURI
-TOKENWORD
+PORT,
+DBURI,
+DBURI_remote,
+TOKENWORD,              //secret token word
 
-#environment
-NODE_ENV
+//wWhatsApp Client
+WSESSION_FILE_PATH,    //file path to store whatsapp sessions
 
-#WWhatsapp Client
-WSESSION_FILE_PATH
+//SMTP
+sendinblue_user,      
+sendinblue_key,
+to_email,
+smtp_host,
+smtp_port,
 
+// Cloudinary
+cloudinary_name,
+cloudinary_api_key,
+cloudinary_api_secret,
+
+//Environment
+baseUrl,
+NODE_ENV,
 ```
 
 ## Directory Structure
