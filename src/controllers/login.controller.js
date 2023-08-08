@@ -5,7 +5,7 @@ const { successfulRes, failedRes } = require('../utils/response');
 const { setS_id } = require('../utils/cookie');
 const { default: mongoose } = require('mongoose');
 const MongoStore = require('connect-mongo');
-const { NODE_ENV, TOKENKEY, to_email, baseUrl } = require('../config/env');
+const { NODE_ENV, TOKENKEY, to_email,baseUrlWeb } = require('../config/env');
 const { smtpMail } = require('../utils/smtp');
 
 const verificationMsg = (name, baseUrl, verfHash) => `Hello ${name},
@@ -33,7 +33,7 @@ exports.regUser = async (req, res) => {
       name: `${saved.first_name} ${saved.last_name}`,
       photo: saved.photo,
       email: saved.email,
-      isVerified: saved.isVerified,
+      isVerified: saved.is_verified,
     };
 
     // setS_id(req, res);
@@ -48,7 +48,7 @@ exports.regUser = async (req, res) => {
       'GoWhats',
       to_email,
       'GoWhats email verification',
-      verificationMsg(`${saved.first_name} ${saved.last_name}`, baseUrl, hash)
+      verificationMsg(`${saved.first_name} ${saved.last_name}`, baseUrlWeb, hash),
     );
     return successfulRes(res, 201, { user, token, email_verifiction: info?.response });
   } catch (e) {
@@ -84,7 +84,7 @@ exports.logUser = async (req, res) => {
         name: `${logged.first_name} ${logged.last_name}`,
         photo: logged.photo,
         email: logged.email,
-        isVerified: logged.isVerified,
+        isVerified: logged.is_verified,
         role: logged.role,
       };
 
@@ -145,7 +145,7 @@ exports.emailVerification = async (req, res) => {
     const hashDoc = await Verification.findOne({ verification_hash: hash }).exec();
     if (hashDoc) {
       const user = await User.findById(hashDoc.user_id).exec();
-      user.isVerified = true;
+      user.is_verified = true;
       await user.save();
       await Verification.deleteMany({ user_id: user.id });
       return successfulRes(res, 200, { msg: 'Email verified successfully' });
@@ -159,17 +159,17 @@ exports.emailVerification = async (req, res) => {
 
 exports.reverifyEmail = async (req, res) => {
   try {
-    const user = req.session;
+    const user = req.session.user;
 
     const hash = crypto.createHmac('sha256', TOKENKEY).update(user._id.toString()).digest('hex');
     const verfCode = new Verification({ verification_hash: hash, user_id: user._id });
     await verfCode.save();
     const info = await smtpMail(
-      saved.email,
+      user.email,
       'GoWhats',
       to_email,
       'GoWhats email verification',
-      verificationMsg(`${user.first_name} ${user.last_name}`, baseUrl, hash)
+      verificationMsg(`${user.first_name} ${user.last_name}`, baseUrlWeb, hash),
     );
 
     return successfulRes(res, 201, { email_verifiction: info.response });
