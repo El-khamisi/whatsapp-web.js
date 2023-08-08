@@ -24,4 +24,7 @@ module.exports = {
   //Environment
   baseUrl: process.env.baseUrl,
   NODE_ENV: process.env.NODE_ENV,
+
+  // url website
+  baseUrlWeb: process.env.baseUrlWeb
 };
