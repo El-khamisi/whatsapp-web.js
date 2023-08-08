@@ -52,6 +52,9 @@ module.exports = async (app, httpServer) => {
     return next();
   });
 
+  app.use(cookieParser())
+
+
   app.use(
     session({
       name: 's_id',
@@ -63,11 +66,12 @@ module.exports = async (app, httpServer) => {
         maxAge: 7 * 24 * 60 * 60 * 1000, //7 days OR ONE WEEK
         sameSite: NODE_ENV == 'dev' ? '' : 'none',
         secure: NODE_ENV == 'dev' ? false : true,
-        httpOnly: false,
+        httpOnly: NODE_ENV == 'dev' ? true: false,
       },
     })
   );
 
+  
   //Allow all CORS-Requests
   const io = new Server(httpServer, {
     allowRequest: (req, cb) => {
