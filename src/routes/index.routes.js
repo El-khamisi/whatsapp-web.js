@@ -16,6 +16,7 @@ const user = require('./user.routes');
 const initSocketio = require('./initSocketio.channels');
 
 module.exports = async (app, httpServer) => {
+  app.use(cookieParser());
   app.use(express.json());
   app.use(morgan('dev'));
 
@@ -52,6 +53,8 @@ module.exports = async (app, httpServer) => {
     return next();
   });
 
+  app.enable('trust proxy');
+
   app.use(
     session({
       name: 's_id',
@@ -63,7 +66,6 @@ module.exports = async (app, httpServer) => {
         maxAge: 7 * 24 * 60 * 60 * 1000, //7 days OR ONE WEEK
         sameSite: NODE_ENV == 'dev' ? '' : 'none',
         secure: NODE_ENV == 'dev' ? false : true,
-        httpOnly: false,
       },
     })
   );
